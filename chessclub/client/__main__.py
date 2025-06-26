@@ -22,9 +22,10 @@ PORT = 5555
 
 locales_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "locales")
 LOCALES = {
-    "ru_RU.UTF-8": gettext.translation("CHESS", locales_dir, languages=["ru_RU.UTF-8"]),
+    "ru_RU.UTF-8": gettext.translation("CHESS", locales_dir, ["ru"]),
     "en_US.UTF-8": gettext.NullTranslations(),
 }
+
 
 def _(text, locale):
     """Return translated text."""
@@ -56,11 +57,12 @@ def get_table_info(sock, table_id):
             return t
     return None
 
+
 def play_game_pygame(
-    table_id, sock, my_color=None, flip_board=False, quit_callback=None, username=None, locale="ru_RU.UTF-8"
+    table_id, sock, my_color=None, flip_board=False, quit_callback=None, username=None
 ):
     """Make fonts and images."""
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # Поднимаемся в /chessdev
     FIGDIR = os.path.join(BASE_DIR, "figures")
     SQ, FPS = 96, 60
     COL_L, COL_D = (240, 217, 181), (181, 136, 99)
@@ -190,7 +192,7 @@ def play_game_pygame(
         uci = move.uci()
         send_recv(sock, {"action": "move", "table_id": table_id, "uci": uci})
 
-       def draw_labels(table_info):
+    def draw_labels(table_info):
         """Draw names of players."""
         if table_info:
             white = table_info.get("white", "")
@@ -202,21 +204,21 @@ def play_game_pygame(
             active_players = set()
 
         if not white or white not in active_players:
-            white_label = _("Ожидание белых", locale)
+            white_label = "Ожидание белых"
         else:
             white_label = white
 
         if not black or black not in active_players:
-            black_label = _("Ожидание чёрных", locale)
+            black_label = "Ожидание чёрных"
         else:
             black_label = black
 
         if my_color == "white":
             my_name = username if username else white_label
-            opp_name = black_label if black_label != my_name else _("Ожидание чёрных", locale)
+            opp_name = black_label if black_label != my_name else "Ожидание чёрных"
         elif my_color == "black":
             my_name = username if username else black_label
-            opp_name = white_label if white_label != my_name else _("Ожидание белых", locale)
+            opp_name = white_label if white_label != my_name else "Ожидание белых"
         else:
             my_name = white_label
             opp_name = black_label
@@ -241,7 +243,7 @@ def play_game_pygame(
 
     resp = send_recv(sock, {"action": "get_board", "table_id": table_id})
     if resp["status"] != "ok":
-        print(_("Ошибка: нет такой партии!", locale))
+        print("Ошибка: нет такой партии!")
         pygame.quit()
         return
 
@@ -386,11 +388,11 @@ def play_game_pygame(
 
         if has_left_table:
             screen.fill((0, 0, 0))
-            text = font_big.render(_("Вы покинули стол", locale), True, (255, 255, 255))
+            text = font_big.render("Вы покинули стол", True, (255, 255, 255))
             rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
             screen.blit(text, rect)
             msg = font_small.render(
-                _("Для продолжения вернитесь в терминал", locale), True, (200, 200, 200)
+                "Для продолжения вернитесь в терминал", True, (200, 200, 200)
             )
             rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
             screen.blit(msg, rect2)
@@ -435,7 +437,7 @@ def play_game_pygame(
                     rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
                     screen.blit(text, rect)
                     msg = font_small.render(
-                        _("Стол был автоматически удален.", locale), True, (200, 200, 200)
+                        "Стол был автоматически удален.", True, (200, 200, 200)
                     )
                     rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
                     screen.blit(msg, rect2)
@@ -487,7 +489,7 @@ def play_game_pygame(
                         pending = None
                         pending_fen = new_fen
                         last = move
-                        else:
+                    else:
                         board.set_fen(new_fen)
                         pending_fen = None
                         if board.is_checkmate() or board.is_stalemate():
@@ -566,10 +568,10 @@ def play_game_pygame(
             mask.fill(MASK_MATE if board.is_checkmate() else MASK_PATT)
             screen.blit(mask, (0, TOP_MARGIN))
             if board.is_checkmate():
-                winner = _("Чёрные", locale) if board.turn else _("Белые", locale)
-                txt = _("Мат. {winner} победили", locale).format(winner=winner)
+                winner = "Чёрные" if board.turn else "Белые"
+                txt = f"Мат. {winner} победили"
             else:
-                txt = _("Пат. Ничья", locale)
+                txt = "Пат. Ничья"
             img = font.render(txt, True, (255, 255, 255))
             rect = img.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
             screen.blit(img, rect)
@@ -579,11 +581,11 @@ def play_game_pygame(
 
     if has_left_table:
         screen.fill((0, 0, 0))
-        text = font_big.render(_("Вы покинули стол", locale), True, (255, 255, 255))
+        text = font_big.render("Вы покинули стол", True, (255, 255, 255))
         rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
         screen.blit(text, rect)
         msg = font_small.render(
-            _("Для продолжения вернитесь в терминал", locale), True, (200, 200, 200)
+            "Для продолжения вернитесь в терминал", True, (200, 200, 200)
         )
         rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
         screen.blit(msg, rect2)
@@ -595,6 +597,7 @@ def play_game_pygame(
     pygame.quit()
     return
 
+
 class ChessCmd(cmd.Cmd):
     """Class for cmd interaction."""
 
@@ -603,6 +606,7 @@ class ChessCmd(cmd.Cmd):
     def __init__(self, username, sock=None):
         """Init class."""
         super().__init__()
+        self.locale = "ru_RU.UTF-8"
         if sock:
             self.sock = sock
         else:
@@ -620,7 +624,6 @@ class ChessCmd(cmd.Cmd):
         self.polling_thread = None
         self.polling_stop = threading.Event()
         self.game_start_request = threading.Event()
-
 
     def wait_for_opponent_and_start(self):
         """Wait for second player."""
@@ -644,6 +647,13 @@ class ChessCmd(cmd.Cmd):
                     self.current_color = None
                     return
             time.sleep(1)
+
+    def do_switchlocale(self, arg):
+        """Change locale ru or en."""
+        if self.locale == "ru_RU.UTF-8":
+            self.locale = "en_US.UTF-8"
+        else:
+            self.locale = "ru_RU.UTF-8"
 
     def do_createtable(self, arg):
         """Создать новый стол для игры.
@@ -697,6 +707,65 @@ class ChessCmd(cmd.Cmd):
             print(
                 f"Table {t['id']} | White: {t['white']} | Black: {t['black']} | InGame: {t['in_game']}"
             )
+
+    def do_join(self, arg):
+        """Присоединиться к существующему столу.
+        Использование: join [id]
+        Без аргументов — быстрое присоединение к свободному столу.
+        Можно присоединиться только к одному столу одновременно (до leave).
+        """
+        if self.current_table is not None:
+            print(
+                "Сначала покиньте текущий стол (leave), чтобы присоединиться к другому."
+            )
+            return
+        args = shlex.split(arg)
+        if not args:
+            resp = send_recv(self.sock, {"action": "join"})
+            print(resp["msg"])
+            if resp["status"] == "ok":
+                self.current_table = resp["data"]["table_id"]
+                self.current_color = resp["data"]["color"]
+                print(
+                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
+                )
+                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                self.start_table_watcher()
+        else:
+            try:
+                tid = int(args[0])
+            except ValueError:
+                print("Некорректный id")
+                return
+            resp = send_recv(self.sock, {"action": "join", "table_id": tid})
+            print(resp["msg"])
+            if resp["status"] == "ok":
+                self.current_table = tid
+                self.current_color = resp["data"]["color"]
+                print(
+                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
+                )
+                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                self.start_table_watcher()
+
+    def on_leave(self):
+        """Quit table."""
+        if self.current_table is not None:
+            send_recv(
+                self.sock,
+                {
+                    "action": "leave",
+                    "table_id": self.current_table,
+                    "color": self.current_color,
+                    "user": self.username,
+                },
+            )
+            self.current_table = None
+            self.current_color = None
+            self.playing = False
+            if hasattr(self, "polling_stop"):
+                self.polling_stop.set()
+            print("Вы покинули стол.")
 
     def start_table_watcher(self):
         """Start watching game of somebody."""
@@ -780,6 +849,28 @@ class ChessCmd(cmd.Cmd):
         """
         self.on_leave()
 
+    def do_view(self, arg):
+        """Посмотреть партию за выбранным столом в режиме зрителя.
+        Использование: view <id>
+        """
+        args = shlex.split(arg)
+        if not args:
+            print(_("Укажите номер стола", self.locale))
+            return
+        try:
+            table_id = int(args[0])
+        except ValueError:
+            print(_("Некорректный номер стола", self.locale))
+            return
+        resp = send_recv(self.sock, {"action": "list_tables"})
+        table_exists = any(t["id"] == table_id for t in resp["data"])
+        if not table_exists:
+            print(_("Нет такого стола", self.locale))
+            return
+        play_game_pygame(
+            table_id, self.sock, my_color=None, flip_board=False, username=self.username
+        )
+
     def do_quit(self, arg):
         """Завершить работу клиента.
         Использование: quit
@@ -788,53 +879,6 @@ class ChessCmd(cmd.Cmd):
         print("Выход...")
         self.on_leave()
         return True
-    
-    def do_leave(self, arg):
-        """Покинуть текущий стол (выйти из партии/лобби).
-        Использование: leave
-        После выхода можно создать или присоединиться к другому столу.
-        """
-        self.on_leave()
-
-    def do_join(self, arg):
-        """Присоединиться к существующему столу.
-        Использование: join [id]
-        Без аргументов — быстрое присоединение к свободному столу.
-        Можно присоединиться только к одному столу одновременно (до leave).
-        """
-        if self.current_table is not None:
-            print(
-                "Сначала покиньте текущий стол (leave), чтобы присоединиться к другому."
-            )
-            return
-        args = shlex.split(arg)
-        if not args:
-            resp = send_recv(self.sock, {"action": "join"})
-            print(resp["msg"])
-            if resp["status"] == "ok":
-                self.current_table = resp["data"]["table_id"]
-                self.current_color = resp["data"]["color"]
-                print(
-                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
-                )
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
-                self.start_table_watcher()
-        else:
-            try:
-                tid = int(args[0])
-            except ValueError:
-                print("Некорректный id")
-                return
-            resp = send_recv(self.sock, {"action": "join", "table_id": tid})
-            print(resp["msg"])
-            if resp["status"] == "ok":
-                self.current_table = tid
-                self.current_color = resp["data"]["color"]
-                print(
-                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
-                )
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
-                self.start_table_watcher()
 
     def complete_join(self, text, line, begidx, endidx):
         """Complete join command."""
@@ -846,8 +890,20 @@ class ChessCmd(cmd.Cmd):
         """Complete create command."""
         return [c for c in ["white", "black"] if c.startswith(text)]
 
-if __name__ == "__main__":
+    def complete_view(self, text, line, begidx, endidx):
+        """Complete view command."""
+        resp = send_recv(self.sock, {"action": "list_tables"})
+        ids = [str(t["id"]) for t in resp["data"]]
+        return [i for i in ids if i.startswith(text)]
+
+
+def run():
+    """Run application."""
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         print("Использование: python3 client.py <имя_игрока>")
         sys.exit(1)
     ChessCmd(sys.argv[1].strip()).cmdloop()
+
+
+if __name__ == "__main__":
+    run()
