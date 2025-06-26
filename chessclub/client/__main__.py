@@ -22,8 +22,13 @@ PORT = 5555
 
 locales_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "locales")
 LOCALES = {
-    "ru_RU.UTF-8": gettext.translation("CHESS", locales_dir, languages=["ru_RU.UTF-8"]),
-    "en_US.UTF-8": gettext.NullTranslations(),
+    "ru_RU.UTF-8": gettext.NullTranslations(),
+    "en_US.UTF-8": gettext.translation(
+        "CHESS",
+        locales_dir,
+        languages=["ru_RU"],
+        fallback=True
+    ),
 }
 
 
