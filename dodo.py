@@ -33,3 +33,15 @@ def task_po():
 #         "file_dep": ["CHESS.pot"],
 #         "targets": [f"CHESS.po"],
 #     }
+
+
+def task_mo():
+    """Compile translations."""
+    return {
+        "actions": [
+            (create_folder, [f"{PODEST}/ru_RU.UTF-8/LC_MESSAGES"]),
+            f"pybabel compile -D CHESS -l ru_RU.UTF-8 -d {PODEST}",
+        ],
+        "file_dep": [f"{PODEST}/ru_RU.UTF-8/LC_MESSAGES/CHESS.po"],
+        "targets": [f"{PODEST}/ru_RU.UTF-8/LC_MESSAGES/CHESS.mo"],
+    }
