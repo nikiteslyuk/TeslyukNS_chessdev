@@ -690,46 +690,6 @@ class ChessCmd(cmd.Cmd):
         """
         self.on_leave()
 
-    def do_join(self, arg):
-        """Присоединиться к существующему столу.
-        Использование: join [id]
-        Без аргументов — быстрое присоединение к свободному столу.
-        Можно присоединиться только к одному столу одновременно (до leave).
-        """
-        if self.current_table is not None:
-            print(
-                "Сначала покиньте текущий стол (leave), чтобы присоединиться к другому."
-            )
-            return
-        args = shlex.split(arg)
-        if not args:
-            resp = send_recv(self.sock, {"action": "join"})
-            print(resp["msg"])
-            if resp["status"] == "ok":
-                self.current_table = resp["data"]["table_id"]
-                self.current_color = resp["data"]["color"]
-                print(
-                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
-                )
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
-                self.start_table_watcher()
-        else:
-            try:
-                tid = int(args[0])
-            except ValueError:
-                print("Некорректный id")
-                return
-            resp = send_recv(self.sock, {"action": "join", "table_id": tid})
-            print(resp["msg"])
-            if resp["status"] == "ok":
-                self.current_table = tid
-                self.current_color = resp["data"]["color"]
-                print(
-                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
-                )
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
-                self.start_table_watcher()
-
 if __name__ == "__main__":
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         print("Использование: python3 client.py <имя_игрока>")

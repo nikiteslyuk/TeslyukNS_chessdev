@@ -140,7 +140,21 @@ class ChessServer:
                                 if color:
                                     resp["msg"] = f"You joined table {tid} as {color}"
                                     resp["data"] = {"color": color}
-
+                elif cmd["action"] == "leave":
+                    tid, color, user = cmd["table_id"], cmd["color"], cmd["user"]
+                    async with self.lock:
+                        if tid in self.tables:
+                            t = self.tables[tid]
+                            if color == "white" and t.white == user:
+                                t.white = None
+                            elif color == "black" and t.black == user:
+                                t.black = None
+                            if t.white is None and t.black is None:
+                                del self.tables[tid]
+                            resp["msg"] = f"{user} left table {tid} ({color})"
+                        else:
+                            resp["status"] = "err"
+                            resp["msg"] = "No such table"
                 out_data = pickle.dumps(resp)
                 writer.write(len(out_data).to_bytes(4, "big"))
                 writer.write(out_data)
