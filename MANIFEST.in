@@ -1,0 +1,8 @@
+recursive-include chessclub *.py
+recursive-include chessclub *.po
+recursive-include chessclub *.mo
+recursive-include chessclub *.rst
+recursive-include chessclub *.txt
+recursive-include chessclub *.html
+recursive-include chessclub/docs/html *
+include *.md
