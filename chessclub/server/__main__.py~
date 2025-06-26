@@ -57,7 +57,19 @@ class ChessServer:
                             self.users[name] = Player(name)
                             resp["msg"] = f"Welcome, {name}"
                             user = name
-                elif cmd["action"] == "createtable":
+              elif cmd["action"] == "ready_play":
+                    tid = cmd["table_id"]
+                    user = cmd["user"]
+                    async with self.lock:
+                        if tid not in self.tables:
+                            resp["status"] = "err"
+                            resp["msg"] = "No such table"
+                        else:
+                            t = self.tables[tid]
+                            t.active_players.add(user)
+                            resp["msg"] = f"{user} is ready"
+
+               elif cmd["action"] == "createtable":
                     color = cmd.get("color", None)
                     async with self.lock:
                         existing_ids = set(self.tables.keys())

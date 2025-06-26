@@ -176,6 +176,15 @@ class ChessServer:
                         else:
                             t = self.tables[tid]
                             resp["data"] = t.board.fen()
+                elif cmd["action"] == "view":
+                    tid = cmd["table_id"]
+                    async with self.lock:
+                        if tid not in self.tables:
+                            resp["status"] = "err"
+                            resp["msg"] = "No such table"
+                        else:
+                            t = self.tables[tid]
+                            resp["data"] = t.board.fen()
                 elif cmd["action"] == "leave":
                     tid, color, user = cmd["table_id"], cmd["color"], cmd["user"]
                     async with self.lock:
