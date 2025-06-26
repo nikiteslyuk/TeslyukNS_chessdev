@@ -559,3 +559,20 @@ def play_game_pygame(
                 SPR[(p.color, p.piece_type)],
                 (drag_pos[0] - SQ // 2, drag_pos[1] - SQ // 2),
             )
+        if promo:
+            promo.draw()
+        if game_over:
+            mask = pygame.Surface((SQ * 8, SQ * 8), pygame.SRCALPHA)
+            mask.fill(MASK_MATE if board.is_checkmate() else MASK_PATT)
+            screen.blit(mask, (0, TOP_MARGIN))
+            if board.is_checkmate():
+                winner = _("Чёрные", locale) if board.turn else _("Белые", locale)
+                txt = _("Мат. {winner} победили", locale).format(winner=winner)
+            else:
+                txt = _("Пат. Ничья", locale)
+            img = font.render(txt, True, (255, 255, 255))
+            rect = img.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
+            screen.blit(img, rect)
+        table_info = get_table_info(sock, table_id)
+        draw_labels(table_info)
+        pygame.display.flip()
