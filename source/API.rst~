@@ -1,0 +1,10 @@
+.. image:: _static/satirical.jpg
+
+Техническая документация
+========================
+
+.. automodule:: chessclub
+    :members:
+    :private-members:
+    :imported-members:
+

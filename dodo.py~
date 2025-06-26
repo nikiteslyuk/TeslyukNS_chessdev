@@ -6,14 +6,6 @@ from shutil import rmtree
 PODEST = "chessclub/locales"
 DOIT_CONFIG = {"default_tasks": ["docs"]}
 
-def task_docs():
-    """Build documentation and beautiful html."""
-    for form in ['rst', 'txt']:
-        yield {
-            'name': form,
-            'file_dep': [*Path(".").glob("*.py"), *Path(".").glob(f"*.{form}")],
-            'actions': ['sphinx-build -M html source chessclub/docs']
-        }
 
 def task_pot():
     """Re-create .pot ."""
