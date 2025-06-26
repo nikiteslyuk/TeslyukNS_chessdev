@@ -1,0 +1,3 @@
+[console_scripts]
+chclient = chessclub.client:run
+chserver = chessclub.server:run
