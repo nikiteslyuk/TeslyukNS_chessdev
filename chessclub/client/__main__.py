@@ -55,3 +55,49 @@ def get_table_info(sock, table_id):
         if t["id"] == table_id:
             return t
     return None
+
+def play_game_pygame(
+    table_id, sock, my_color=None, flip_board=False, quit_callback=None, username=None, locale="ru_RU.UTF-8"
+):
+    """Make fonts and images."""
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+    FIGDIR = os.path.join(BASE_DIR, "figures")
+    SQ, FPS = 96, 60
+    COL_L, COL_D = (240, 217, 181), (181, 136, 99)
+    CLR_LAST, CLR_MOVE, CLR_CAP, CLR_CHK = (
+        (0, 120, 215, 120),
+        (255, 255, 0, 120),
+        (255, 0, 0, 120),
+        (200, 0, 0, 150),
+    )
+    MASK_MATE, MASK_PATT = (200, 0, 0, 130), (128, 128, 128, 130)
+    ANIM_FRAMES = 12
+    TOP_MARGIN = 40
+    BOTTOM_MARGIN = 40
+
+    pygame.init()
+    pygame.font.init()
+
+    screen = pygame.display.set_mode((SQ * 8, TOP_MARGIN + SQ * 8 + BOTTOM_MARGIN))
+    pygame.display.set_caption(f"Table {table_id}")
+    clock = pygame.time.Clock()
+    font = pygame.font.SysFont(None, 48)
+    label_font = pygame.font.SysFont(None, 40)
+    font_big = pygame.font.SysFont(None, 64)
+    font_small = pygame.font.SysFont(None, 32)
+
+    MAP = {
+        chess.PAWN: "p",
+        chess.KNIGHT: "kn",
+        chess.BISHOP: "b",
+        chess.ROOK: "r",
+        chess.QUEEN: "q",
+        chess.KING: "k",
+    }
+    SPR = {}
+    for col, prefix in ((chess.WHITE, "w"), (chess.BLACK, "b")):
+        for pt, s in MAP.items():
+            path = os.path.join(FIGDIR, f"{prefix}{s}.png")
+            SPR[(col, pt)] = pygame.transform.smoothscale(
+                pygame.image.load(path).convert_alpha(), (SQ, SQ)
+            )
