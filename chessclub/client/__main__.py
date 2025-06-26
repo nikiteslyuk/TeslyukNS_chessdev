@@ -455,3 +455,35 @@ def play_game_pygame(
                             break
                     if move:
                         s, t = sq_center(move.from_square), sq_center(move.to_square)
+                        anims.append(
+                            Anim(
+                                board.piece_at(move.from_square).piece_type,
+                                board.turn,
+                                (s[0] - SQ // 2, s[1] - SQ // 2),
+                                (t[0] - SQ // 2, t[1] - SQ // 2),
+                                move.from_square,
+                            )
+                        )
+                        if board.is_castling(move):
+                            rf, rt = (
+                                (7, 5)
+                                if chess.square_file(move.to_square) == 6
+                                else (0, 3)
+                            )
+                            rf, rt = chess.square(
+                                rf, chess.square_rank(move.to_square)
+                            ), chess.square(rt, chess.square_rank(move.to_square))
+                            rs, rtg = sq_center(rf), sq_center(rt)
+                            rook = board.piece_at(rf)
+                            anims.append(
+                                Anim(
+                                    rook.piece_type,
+                                    rook.color,
+                                    (rs[0] - SQ // 2, rs[1] - SQ // 2),
+                                    (rtg[0] - SQ // 2, rtg[1] - SQ // 2),
+                                    rf,
+                                )
+                            )
+                        pending = None
+                        pending_fen = new_fen
+                        last = move
