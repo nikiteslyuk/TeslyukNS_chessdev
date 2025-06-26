@@ -128,3 +128,22 @@ def play_game_pygame(
         if 0 <= f < 8 and 0 <= board_r < 8:
             return chess.square(f, board_r)
         return None
+
+    class Anim:
+        """Animate with pygame."""
+
+        def __init__(self, ptype, col, start, target, orig):
+            """Init class."""
+            self.ptype, self.col, self.pos = ptype, col, start
+            self.start, self.target, self.orig, self.f = start, target, orig, 0
+
+        def tick(self):
+            """Tick frames."""
+            self.f += 1
+            t = min(1, self.f / ANIM_FRAMES)
+            ease = 1 - (1 - t) * (1 - t)
+            self.pos = (
+                self.start[0] + (self.target[0] - self.start[0]) * ease,
+                self.start[1] + (self.target[1] - self.start[1]) * ease,
+            )
+            return t >= 1
