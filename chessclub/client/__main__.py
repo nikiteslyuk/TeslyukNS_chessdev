@@ -147,3 +147,29 @@ def play_game_pygame(
                 self.start[1] + (self.target[1] - self.start[1]) * ease,
             )
             return t >= 1
+
+    class PromoMenu:
+        """Class for pawn promotion menu."""
+
+        def __init__(self, col, to_sq):
+            """Init class."""
+            self.col = col
+            self.opts = [chess.QUEEN, chess.ROOK, chess.BISHOP, chess.KNIGHT]
+            w = h = SQ
+            pad = 12
+            H = h * 4 + pad * 3
+            f, r = chess.square_file(to_sq), chess.square_rank(to_sq)
+            r_p = r if flip_board else 7 - r
+            x = f * SQ
+            y = (
+                r_p * SQ + SQ + TOP_MARGIN
+                if r_p * SQ + SQ + H + TOP_MARGIN <= TOP_MARGIN + SQ * 8
+                else r_p * SQ + TOP_MARGIN - H
+            )
+            self.rects = []
+            self.top = (x, y)
+            self.surf = pygame.Surface((w, H), pygame.SRCALPHA)
+            self.surf.fill((30, 30, 30, 230))
+            for i, pt in enumerate(self.opts):
+                self.surf.blit(SPR[(col, pt)], (0, i * (h + pad)))
+                self.rects.append(pygame.Rect(x, y + i * (h + pad), w, h))
