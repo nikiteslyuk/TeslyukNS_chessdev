@@ -7,6 +7,26 @@ import chess
 HOST = "0.0.0.0"
 PORT = 5555
 
+class Player:
+    """Class with player name."""
+
+    def __init__(self, name):
+        """Init class."""
+        self.name = name
+
+
+class Table:
+    """Class with chess table info."""
+
+    def __init__(self, tid, white=None, black=None):
+        """Init class."""
+        self.id = tid
+        self.white = white
+        self.black = black
+        self.board = chess.Board()
+        self.spectators = []
+        self.active_players = set()
+
 class ChessServer:
     """Class for handling interaction between players and table management."""
 
@@ -38,6 +58,46 @@ class ChessServer:
                             self.users[name] = Player(name)
                             resp["msg"] = f"Welcome, {name}"
                             user = name
+                elif cmd["action"] == "createtable":
+                    color = cmd.get("color", None)
+                    async with self.lock:
+                        existing_ids = set(self.tables.keys())
+                        tid = 1
+                        while tid in existing_ids:
+                            tid += 1
+                        table = Table(tid)
+                        import random
+
+                        if color is None:
+                            color = random.choice(["white", "black"])
+                        if color == "white":
+                            table.white = user
+                        elif color == "black":
+                            table.black = user
+                        self.tables[tid] = table
+                        resp["data"] = {"table_id": tid, "color": color}
+                        resp["msg"] = (
+                            f"Table {tid} created, you play as {color}, waiting for second player"
+                        )
+                elif cmd["action"] == "list_tables":
+                    async with self.lock:
+                        tables = [
+                            {
+                                "id": t.id,
+                                "white": t.white,
+                                "black": t.black,
+                                "in_game": (
+                                    t.white is not None and t.black is not None
+                                ),
+                                "active_players": (
+                                    list(t.active_players)
+                                    if hasattr(t, "active_players")
+                                    else []
+                                ),
+                            }
+                            for t in self.tables.values()
+                        ]
+                        resp["data"] = tables
 
                 out_data = pickle.dumps(resp)
                 writer.write(len(out_data).to_bytes(4, "big"))

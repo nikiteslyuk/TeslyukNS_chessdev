@@ -58,6 +58,68 @@ class ChessServer:
                             self.users[name] = Player(name)
                             resp["msg"] = f"Welcome, {name}"
                             user = name
+                elif cmd["action"] == "createtable":
+                    color = cmd.get("color", None)
+                    async with self.lock:
+                        existing_ids = set(self.tables.keys())
+                        tid = 1
+                        while tid in existing_ids:
+                            tid += 1
+                        table = Table(tid)
+                        import random
+
+                        if color is None:
+                            color = random.choice(["white", "black"])
+                        if color == "white":
+                            table.white = user
+                        elif color == "black":
+                            table.black = user
+                        self.tables[tid] = table
+                        resp["data"] = {"table_id": tid, "color": color}
+                        resp["msg"] = (
+                            f"Table {tid} created, you play as {color}, waiting for second player"
+                        )
+                elif cmd["action"] == "list_tables":
+                    async with self.lock:
+                        tables = [
+                            {
+                                "id": t.id,
+                                "white": t.white,
+                                "black": t.black,
+                                "in_game": (
+                                    t.white is not None and t.black is not None
+                                ),
+                                "active_players": (
+                                    list(t.active_players)
+                                    if hasattr(t, "active_players")
+                                    else []
+                                ),
+                            }
+                            for t in self.tables.values()
+                        ]
+                        resp["data"] = tables
+                elif cmd["action"] == "join":
+                    tid = cmd.get("table_id", None)
+                    async with self.lock:
+                        if tid is None:
+                            found = False
+                            for t in self.tables.values():
+                                if not (t.white and t.black):
+                                    found = True
+                                    if not t.white:
+                                        t.white = user
+                                        color = "white"
+                                    else:
+                                        t.black = user
+                                        color = "black"
+                                    resp["data"] = {"table_id": t.id, "color": color}
+                                    resp["msg"] = (
+                                        f"Fastjoined to table {t.id} as {color}"
+                                    )
+                                    break
+                            if not found:
+                                resp["status"] = "err"
+                                resp["msg"] = "No available tables. Create one!"
 
                 out_data = pickle.dumps(resp)
                 writer.write(len(out_data).to_bytes(4, "big"))
