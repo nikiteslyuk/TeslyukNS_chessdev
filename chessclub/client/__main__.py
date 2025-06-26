@@ -641,6 +641,7 @@ class ChessCmd(cmd.Cmd):
                         flip_board=flip,
                         quit_callback=self.on_leave,
                         username=self.username,
+                        locale=self.locale
                     )
                     self.playing = False
                     self.current_table = None
@@ -837,6 +838,7 @@ class ChessCmd(cmd.Cmd):
                     flip_board=flip,
                     quit_callback=self.on_leave,
                     username=self.username,
+                    locale=self.locale
                 )
                 self.playing = False
                 self.current_table = None
@@ -870,7 +872,7 @@ class ChessCmd(cmd.Cmd):
             print(_("Нет такого стола", self.locale))
             return
         play_game_pygame(
-            table_id, self.sock, my_color=None, flip_board=False, username=self.username
+            table_id, self.sock, my_color=None, flip_board=False, username=self.username, locale=self.locale
         )
 
     def do_quit(self, arg):
