@@ -101,3 +101,30 @@ def play_game_pygame(
             SPR[(col, pt)] = pygame.transform.smoothscale(
                 pygame.image.load(path).convert_alpha(), (SQ, SQ)
             )
+
+    def surf(color):
+        """Color surface of chess board."""
+        s = pygame.Surface((SQ, SQ), pygame.SRCALPHA)
+        s.fill(color)
+        return s
+
+    S_LAST, S_MOVE, S_CAP, S_CHK = map(surf, (CLR_LAST, CLR_MOVE, CLR_CAP, CLR_CHK))
+
+    def sq_center(sq):
+        """Measure square center."""
+        f = chess.square_file(sq)
+        r = chess.square_rank(sq)
+        r = r if flip_board else 7 - r
+        return f * SQ + SQ // 2, r * SQ + SQ // 2 + TOP_MARGIN
+
+    def mouse_sq(x, y):
+        """Position mouse."""
+        y_on_board = y - TOP_MARGIN
+        if y_on_board < 0 or y_on_board >= SQ * 8:
+            return None
+        f = x // SQ
+        r = y_on_board // SQ
+        board_r = r if flip_board else 7 - r
+        if 0 <= f < 8 and 0 <= board_r < 8:
+            return chess.square(f, board_r)
+        return None
