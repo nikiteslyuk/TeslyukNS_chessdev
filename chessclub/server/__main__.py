@@ -14,7 +14,6 @@ class Player:
         """Init class."""
         self.name = name
 
-
 class Table:
     """Class with chess table info."""
 
@@ -58,7 +57,19 @@ class ChessServer:
                             self.users[name] = Player(name)
                             resp["msg"] = f"Welcome, {name}"
                             user = name
-                elif cmd["action"] == "createtable":
+              elif cmd["action"] == "ready_play":
+                    tid = cmd["table_id"]
+                    user = cmd["user"]
+                    async with self.lock:
+                        if tid not in self.tables:
+                            resp["status"] = "err"
+                            resp["msg"] = "No such table"
+                        else:
+                            t = self.tables[tid]
+                            t.active_players.add(user)
+                            resp["msg"] = f"{user} is ready"
+
+               elif cmd["action"] == "createtable":
                     color = cmd.get("color", None)
                     async with self.lock:
                         existing_ids = set(self.tables.keys())
@@ -140,6 +151,31 @@ class ChessServer:
                                 if color:
                                     resp["msg"] = f"You joined table {tid} as {color}"
                                     resp["data"] = {"color": color}
+                elif cmd["action"] == "move":
+                    tid, uci = cmd["table_id"], cmd["uci"]
+                    async with self.lock:
+                        if tid not in self.tables:
+                            resp["status"] = "err"
+                            resp["msg"] = "No such table"
+                        else:
+                            t = self.tables[tid]
+                            mv = chess.Move.from_uci(uci)
+                            if mv in t.board.legal_moves:
+                                t.board.push(mv)
+                                resp["msg"] = "Move accepted"
+                            else:
+                                resp["status"] = "err"
+                                resp["msg"] = "Illegal move"
+
+                elif cmd["action"] == "get_board":
+                    tid = cmd["table_id"]
+                    async with self.lock:
+                        if tid not in self.tables:
+                            resp["status"] = "err"
+                            resp["msg"] = "No such table"
+                        else:
+                            t = self.tables[tid]
+                            resp["data"] = t.board.fen()
                 elif cmd["action"] == "leave":
                     tid, color, user = cmd["table_id"], cmd["color"], cmd["user"]
                     async with self.lock:
