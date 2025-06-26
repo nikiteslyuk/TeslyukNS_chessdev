@@ -621,6 +621,30 @@ class ChessCmd(cmd.Cmd):
         self.polling_stop = threading.Event()
         self.game_start_request = threading.Event()
 
+
+    def wait_for_opponent_and_start(self):
+        """Wait for second player."""
+        print("Ожидание второго игрока...")
+        while True:
+            resp = send_recv(self.sock, {"action": "list_tables"})
+            for t in resp["data"]:
+                if t["id"] == self.current_table and t["white"] and t["black"]:
+                    print("Партия стартует!")
+                    flip = self.current_color == "black"
+                    play_game_pygame(
+                        self.current_table,
+                        self.sock,
+                        my_color=self.current_color,
+                        flip_board=flip,
+                        quit_callback=self.on_leave,
+                        username=self.username,
+                    )
+                    self.playing = False
+                    self.current_table = None
+                    self.current_color = None
+                    return
+            time.sleep(1)
+
     def do_createtable(self, arg):
         """Создать новый стол для игры.
         Использование: createtable [as white|black]
@@ -673,6 +697,88 @@ class ChessCmd(cmd.Cmd):
             print(
                 f"Table {t['id']} | White: {t['white']} | Black: {t['black']} | InGame: {t['in_game']}"
             )
+
+    def start_table_watcher(self):
+        """Start watching game of somebody."""
+        import threading
+
+        if (
+            hasattr(self, "polling_thread")
+            and self.polling_thread
+            and self.polling_thread.is_alive()
+        ):
+            self.polling_stop.set()
+            self.polling_thread.join()
+        self.polling_stop = threading.Event()
+        self.game_start_request.clear()
+        self.polling_thread = threading.Thread(target=self.table_watcher, daemon=True)
+        self.polling_thread.start()
+
+    def table_watcher(self):
+        """Get recponses for game of somebody."""
+        import time
+
+        notified = False
+        while (
+            not self.polling_stop.is_set()
+            and self.current_table
+            and self.current_color
+            and not notified
+        ):
+            resp = send_recv(self.sock, {"action": "list_tables"})
+            for t in resp["data"]:
+                if t["id"] == self.current_table and t["white"] and t["black"]:
+                    other = t["white"] if self.current_color == "black" else t["black"]
+                    if other and other != self.username:
+                        print(
+                            f"\nИгрок {other} готов с вами сыграть! Введите команду play для старта партии."
+                        )
+                        print(self.prompt, end="", flush=True)
+                        notified = True
+                        return
+            time.sleep(1)
+
+    def do_play(self, arg):
+        """Начать игру, если оба игрока присоединились к столу и готовы.
+        Использование: play
+        Окно игры откроется и терминал будет заблокирован до окончания партии или выхода.
+        """
+        if self.current_table is None or self.current_color is None:
+            print("Нет активного стола. Сначала создайте или присоединитесь.")
+            return
+        resp = send_recv(self.sock, {"action": "list_tables"})
+        for t in resp["data"]:
+            if t["id"] == self.current_table and t["white"] and t["black"]:
+                send_recv(
+                    self.sock,
+                    {
+                        "action": "ready_play",
+                        "table_id": self.current_table,
+                        "user": self.username,
+                    },
+                )
+                flip = self.current_color == "black"
+                self.playing = True
+                play_game_pygame(
+                    self.current_table,
+                    self.sock,
+                    my_color=self.current_color,
+                    flip_board=flip,
+                    quit_callback=self.on_leave,
+                    username=self.username,
+                )
+                self.playing = False
+                self.current_table = None
+                self.current_color = None
+                return
+        print("Соперник еще не подключился! Ждите оповещения.")
+
+    def do_leave(self, arg):
+        """Покинуть текущий стол (выйти из партии/лобби).
+        Использование: leave
+        После выхода можно создать или присоединиться к другому столу.
+        """
+        self.on_leave()
 
     def do_quit(self, arg):
         """Завершить работу клиента.
@@ -729,6 +835,16 @@ class ChessCmd(cmd.Cmd):
                 )
                 print("Ждём соперника... Когда он появится, вы получите уведомление.")
                 self.start_table_watcher()
+
+    def complete_join(self, text, line, begidx, endidx):
+        """Complete join command."""
+        resp = send_recv(self.sock, {"action": "list_tables"})
+        ids = [str(t["id"]) for t in resp["data"]]
+        return [i for i in ids if i.startswith(text)]
+
+    def complete_create(self, text, line, begidx, endidx):
+        """Complete create command."""
+        return [c for c in ["white", "black"] if c.startswith(text)]
 
 if __name__ == "__main__":
     if len(sys.argv) < 2 or not sys.argv[1].strip():
