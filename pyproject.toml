@@ -1,0 +1,35 @@
+[project]
+name="chessclub"
+description="Chess Club"
+dynamic=["version"]
+readme="README.md"
+dependencies = [
+	"pygame",
+	"chess",
+]
+license = "MIT"
+authors = [
+ {name = "Niki and Artyom", email = "aaa@aaa.a"}
+]
+
+[project.scripts]
+chclient = 'chessclub.client:run'
+chserver = 'chessclub.server:run'
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.package-dir]
+chessclub="chessclub"
+
+[tool.setuptools.package-data]
+chessclub=["locales/*/*/*.mo",
+"locales/*/*/*.po",
+"client/*.py",
+"server/*.py",
+"tests/*",
+"figures/*",
+"docs/html/*.html",
+"docs/html/**/*",
+]

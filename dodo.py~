@@ -74,7 +74,8 @@ def task_pep8():
 def task_test():
     """Perform tests."""
     return {
-            'actions': ['python3 -m chessclub.tests.unittests -v']
+            'actions': ['python3 -m chessclub.tests.unittests -v'],
+            'task_dep': ['i18n']
     }
 
 def task_clean_targets():
