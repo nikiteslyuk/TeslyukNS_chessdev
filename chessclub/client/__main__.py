@@ -25,3 +25,33 @@ LOCALES = {
     "ru_RU.UTF-8": gettext.translation("CHESS", locales_dir, languages=["ru_RU.UTF-8"]),
     "en_US.UTF-8": gettext.NullTranslations(),
 }
+
+def _(text, locale):
+    """Return translated text."""
+    return LOCALES[locale].gettext(text)
+
+
+def send_recv(sock, data):
+    """Sends pickle payload to receive response from server."""
+    payload = pickle.dumps(data)
+    sock.sendall(len(payload).to_bytes(4, "big") + payload)
+    resp_len_bytes = sock.recv(4)
+    if not resp_len_bytes:
+        raise ConnectionError("Server disconnected")
+    resp_len = int.from_bytes(resp_len_bytes, "big")
+    resp_data = b""
+    while len(resp_data) < resp_len:
+        chunk = sock.recv(resp_len - len(resp_data))
+        if not chunk:
+            raise ConnectionError("Server disconnected")
+        resp_data += chunk
+    return pickle.loads(resp_data)
+
+
+def get_table_info(sock, table_id):
+    """Get table list and print info."""
+    resp = send_recv(sock, {"action": "list_tables"})
+    for t in resp["data"]:
+        if t["id"] == table_id:
+            return t
+    return None
