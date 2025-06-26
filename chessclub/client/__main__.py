@@ -361,3 +361,34 @@ def play_game_pygame(
                             drag_sq,
                         )
                     )
+                    if mv and board.is_castling(mv):
+                        rf, rt = (
+                            (7, 5) if chess.square_file(mv.to_square) == 6 else (0, 3)
+                        )
+                        rf, rt = chess.square(
+                            rf, chess.square_rank(mv.to_square)
+                        ), chess.square(rt, chess.square_rank(mv.to_square))
+                        rs, rtg = sq_center(rf), sq_center(rt)
+                        rook = board.piece_at(rf)
+                        anims.append(
+                            Anim(
+                                rook.piece_type,
+                                rook.color,
+                                (rs[0] - SQ // 2, rs[1] - SQ // 2),
+                                (rtg[0] - SQ // 2, rtg[1] - SQ // 2),
+                                rf,
+                            )
+                        )
+                    pending = mv
+                    drag_sq = drag_pos = None
+                    legal_sqs.clear()
+                    capture_sqs.clear()
+
+        if has_left_table:
+            screen.fill((0, 0, 0))
+            text = font_big.render(_("Вы покинули стол", locale), True, (255, 255, 255))
+            rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
+            screen.blit(text, rect)
+            msg = font_small.render(
+                _("Для продолжения вернитесь в терминал", locale), True, (200, 200, 200)
+            )
