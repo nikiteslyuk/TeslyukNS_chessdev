@@ -674,6 +674,22 @@ class ChessCmd(cmd.Cmd):
                 f"Table {t['id']} | White: {t['white']} | Black: {t['black']} | InGame: {t['in_game']}"
             )
 
+    def do_quit(self, arg):
+        """Завершить работу клиента.
+        Использование: quit
+        Перед выходом автоматически покидает текущий стол.
+        """
+        print("Выход...")
+        self.on_leave()
+        return True
+    
+    def do_leave(self, arg):
+        """Покинуть текущий стол (выйти из партии/лобби).
+        Использование: leave
+        После выхода можно создать или присоединиться к другому столу.
+        """
+        self.on_leave()
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         print("Использование: python3 client.py <имя_игрока>")
