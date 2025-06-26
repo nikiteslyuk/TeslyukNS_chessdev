@@ -37,3 +37,18 @@ class TestChessProject(unittest.TestCase):
 
         t.active_players.update({"vasya", "petya"})
         self.assertSetEqual(t.active_players, {"vasya", "petya"})
+
+    def test_get_table_info(self):
+        """get_table_info возвращает нужную запись стола или None."""
+        fake_sock = MagicMock()
+
+        with patch("chessclub.client.__main__.send_recv") as mock_send_recv:
+            mock_send_recv.return_value = {
+                "data": [
+                    {"id": 1, "white": "a", "black": "b"},
+                    {"id": 2, "white": None, "black": "c"},
+                ]
+            }
+
+            self.assertEqual(get_table_info(fake_sock, 1)["id"], 1)
+            self.assertIsNone(get_table_info(fake_sock, 99))
