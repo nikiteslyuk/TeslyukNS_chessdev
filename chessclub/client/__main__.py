@@ -730,6 +730,16 @@ class ChessCmd(cmd.Cmd):
                 print("Ждём соперника... Когда он появится, вы получите уведомление.")
                 self.start_table_watcher()
 
+    def complete_join(self, text, line, begidx, endidx):
+        """Complete join command."""
+        resp = send_recv(self.sock, {"action": "list_tables"})
+        ids = [str(t["id"]) for t in resp["data"]]
+        return [i for i in ids if i.startswith(text)]
+
+    def complete_create(self, text, line, begidx, endidx):
+        """Complete create command."""
+        return [c for c in ["white", "black"] if c.startswith(text)]
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         print("Использование: python3 client.py <имя_игрока>")
