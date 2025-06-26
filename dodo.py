@@ -54,6 +54,12 @@ def task_mo():
         "targets": [f"{PODEST}/ru_RU.UTF-8/LC_MESSAGES/CHESS.mo"],
     }
 
+def task_pep8():
+    """Check flake8 and pydocutils."""
+    return {
+            'actions': ['flake8 chessclub', 'pydocstyle chessclub']
+    }
+
 def task_i18n():
     """Internalization Meta-task."""
     return {

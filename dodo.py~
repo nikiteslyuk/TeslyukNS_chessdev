@@ -53,3 +53,24 @@ def task_mo():
         "file_dep": [f"{PODEST}/ru_RU.UTF-8/LC_MESSAGES/CHESS.po"],
         "targets": [f"{PODEST}/ru_RU.UTF-8/LC_MESSAGES/CHESS.mo"],
     }
+
+def task_i18n():
+    """Internalization Meta-task."""
+    return {
+            'actions': None,
+            'task_dep': ['pot', 'po', 'mo'],
+    }
+
+
+def task_clean_targets():
+    """Gitclean."""
+    return {
+            'actions': ['gir clean -xdf', 'rmtree docs']
+    }
+
+def task_erase():
+    """Erase generates and new files."""
+    return {
+        'actions': ['git reset --hard', 'git clean -xdf']
+    }
+
