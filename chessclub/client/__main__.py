@@ -307,4 +307,57 @@ def play_game_pygame(
                         if board.is_checkmate() or board.is_stalemate():
                             game_over = True
                 continue
+            if anims:
+                continue
+            if my_is_player and (
+                (board.turn and my_is_white) or (not board.turn and my_is_black)
+            ):
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                    sq = mouse_sq(*e.pos)
+                    if (
+                        sq is not None
+                        and board.piece_at(sq)
+                        and board.piece_at(sq).color == board.turn
+                    ):
+                        drag_sq, drag_pos = sq, e.pos
+                        legal_sqs, capture_sqs = set(), set()
+                        for mv in board.legal_moves:
+                            if mv.from_square == sq:
+                                if board.piece_at(mv.to_square):
+                                    capture_sqs.add(mv.to_square)
+                                elif (
+                                    board.piece_at(sq).piece_type == chess.PAWN
+                                    and board.ep_square is not None
+                                    and mv.to_square == board.ep_square
+                                ):
+                                    capture_sqs.add(mv.to_square)
+                                else:
+                                    legal_sqs.add(mv.to_square)
 
+                elif e.type == pygame.MOUSEMOTION and (drag_sq is not None):
+                    drag_pos = e.pos
+                elif e.type == pygame.MOUSEBUTTONUP and e.button == 1 and (drag_sq is not None):
+                    dst = mouse_sq(*e.pos)
+                    mv = None
+                    for m in board.legal_moves:
+                        if m.from_square == drag_sq and m.to_square == dst:
+                            mv = m
+                            break
+                    start = (drag_pos[0] - SQ // 2, drag_pos[1] - SQ // 2)
+                    tgt = (
+                        (sq_center(dst)[0] - SQ // 2, sq_center(dst)[1] - SQ // 2)
+                        if mv
+                        else (
+                            sq_center(drag_sq)[0] - SQ // 2,
+                            sq_center(drag_sq)[1] - SQ // 2,
+                        )
+                    )
+                    anims.append(
+                        Anim(
+                            board.piece_at(drag_sq).piece_type,
+                            board.turn,
+                            start,
+                            tgt,
+                            drag_sq,
+                        )
+                    )
