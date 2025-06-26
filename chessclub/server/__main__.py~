@@ -7,26 +7,6 @@ import chess
 HOST = "0.0.0.0"
 PORT = 5555
 
-class Player:
-    """Class with player name."""
-
-    def __init__(self, name):
-        """Init class."""
-        self.name = name
-
-
-class Table:
-    """Class with chess table info."""
-
-    def __init__(self, tid, white=None, black=None):
-        """Init class."""
-        self.id = tid
-        self.white = white
-        self.black = black
-        self.board = chess.Board()
-        self.spectators = []
-        self.active_players = set()
-
 class ChessServer:
     """Class for handling interaction between players and table management."""
 
