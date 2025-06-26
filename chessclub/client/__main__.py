@@ -245,3 +245,26 @@ def play_game_pygame(
         pygame.quit()
         return
 
+    board = chess.Board(resp["data"])
+    drag_sq = drag_pos = None
+    legal_sqs, capture_sqs = set(), set()
+    last = None
+    anims = []
+    pending = None
+    promo = None
+    game_over = False
+
+    my_is_white = my_color == "white"
+    my_is_black = my_color == "black"
+    my_is_player = my_is_white or my_is_black
+
+    POLL_INTERVAL = 0.3
+    last_poll = 0
+    pending_fen = None
+
+    has_left_table = False
+    left_table_time = None
+
+    if board.is_checkmate() or board.is_stalemate():
+        game_over = True
+
