@@ -268,3 +268,43 @@ def play_game_pygame(
     if board.is_checkmate() or board.is_stalemate():
         game_over = True
 
+    running = True
+    while running:
+        dt = clock.tick(FPS)
+        now = time.time()
+
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT or (
+                e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE
+            ):
+                has_left_table = True
+                left_table_time = time.time()
+                if quit_callback:
+                    quit_callback()
+                break
+
+            if has_left_table:
+                if e.type in [pygame.MOUSEBUTTONDOWN, pygame.KEYDOWN]:
+                    running = False
+                    break
+                continue
+
+            if game_over:
+                continue
+
+            if promo:
+                if e.type == pygame.MOUSEBUTTONDOWN and e.button == 1:
+                    ptype = promo.click(e.pos)
+                    if ptype:
+                        push_move = chess.Move(
+                            pending.from_square, pending.to_square, promotion=ptype
+                        )
+                        board.push(push_move)
+                        last = push_move
+                        promo = None
+                        send_move(push_move)
+                        pending = None
+                        if board.is_checkmate() or board.is_stalemate():
+                            game_over = True
+                continue
+
