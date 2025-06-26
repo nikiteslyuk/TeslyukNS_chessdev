@@ -522,3 +522,40 @@ def play_game_pygame(
                 f, r = chess.square_file(k), chess.square_rank(k)
                 draw_r = r if flip_board else 7 - r
                 screen.blit(S_CHK, (f * SQ, draw_r * SQ + TOP_MARGIN))
+        anim_orig = {a.orig for a in anims}
+        promo_pending = promo is not None and pending is not None
+        for sq, p in board.piece_map().items():
+            if sq == drag_sq or sq in anim_orig:
+                continue
+            if promo_pending:
+                if sq == pending.to_square:
+                    if board.piece_at(sq) and board.piece_at(pending.from_square):
+                        if (
+                            board.piece_at(sq).color
+                            != board.piece_at(pending.from_square).color
+                        ):
+                            continue
+                if sq == pending.from_square:
+                    continue
+            f, r = chess.square_file(sq), chess.square_rank(sq)
+            draw_r = r if flip_board else 7 - r
+            screen.blit(
+                SPR[(p.color, p.piece_type)], (f * SQ, draw_r * SQ + TOP_MARGIN)
+            )
+        if promo_pending:
+            p = board.piece_at(pending.from_square)
+            f, r = chess.square_file(pending.to_square), chess.square_rank(
+                pending.to_square
+            )
+            draw_r = r if flip_board else 7 - r
+            screen.blit(
+                SPR[(p.color, p.piece_type)], (f * SQ, draw_r * SQ + TOP_MARGIN)
+            )
+        for a in anims:
+            screen.blit(SPR[(a.col, a.ptype)], a.pos)
+        if (drag_sq is not None) and drag_pos:
+            p = board.piece_at(drag_sq)
+            screen.blit(
+                SPR[(p.color, p.piece_type)],
+                (drag_pos[0] - SQ // 2, drag_pos[1] - SQ // 2),
+            )
