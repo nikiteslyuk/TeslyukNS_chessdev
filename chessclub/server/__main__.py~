@@ -98,6 +98,48 @@ class ChessServer:
                             for t in self.tables.values()
                         ]
                         resp["data"] = tables
+                elif cmd["action"] == "join":
+                    tid = cmd.get("table_id", None)
+                    async with self.lock:
+                        if tid is None:
+                            found = False
+                            for t in self.tables.values():
+                                if not (t.white and t.black):
+                                    found = True
+                                    if not t.white:
+                                        t.white = user
+                                        color = "white"
+                                    else:
+                                        t.black = user
+                                        color = "black"
+                                    resp["data"] = {"table_id": t.id, "color": color}
+                                    resp["msg"] = (
+                                        f"Fastjoined to table {t.id} as {color}"
+                                    )
+                                    break
+                            if not found:
+                                resp["status"] = "err"
+                                resp["msg"] = "No available tables. Create one!"
+                        else:
+                            if tid not in self.tables:
+                                resp["status"] = "err"
+                                resp["msg"] = "No such table"
+                            else:
+                                t = self.tables[tid]
+                                color = None
+                                if not t.white:
+                                    t.white = user
+                                    color = "white"
+                                elif not t.black:
+                                    t.black = user
+                                    color = "black"
+                                else:
+                                    resp["status"] = "err"
+                                    resp["msg"] = "Both seats are taken"
+                                    color = None
+                                if color:
+                                    resp["msg"] = f"You joined table {tid} as {color}"
+                                    resp["data"] = {"color": color}
 
                 out_data = pickle.dumps(resp)
                 writer.write(len(out_data).to_bytes(4, "big"))

@@ -120,6 +120,26 @@ class ChessServer:
                             if not found:
                                 resp["status"] = "err"
                                 resp["msg"] = "No available tables. Create one!"
+                        else:
+                            if tid not in self.tables:
+                                resp["status"] = "err"
+                                resp["msg"] = "No such table"
+                            else:
+                                t = self.tables[tid]
+                                color = None
+                                if not t.white:
+                                    t.white = user
+                                    color = "white"
+                                elif not t.black:
+                                    t.black = user
+                                    color = "black"
+                                else:
+                                    resp["status"] = "err"
+                                    resp["msg"] = "Both seats are taken"
+                                    color = None
+                                if color:
+                                    resp["msg"] = f"You joined table {tid} as {color}"
+                                    resp["data"] = {"color": color}
 
                 out_data = pickle.dumps(resp)
                 writer.write(len(out_data).to_bytes(4, "big"))
