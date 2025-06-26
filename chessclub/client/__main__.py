@@ -173,3 +173,20 @@ def play_game_pygame(
             for i, pt in enumerate(self.opts):
                 self.surf.blit(SPR[(col, pt)], (0, i * (h + pad)))
                 self.rects.append(pygame.Rect(x, y + i * (h + pad), w, h))
+
+        def draw(self):
+            """Blit images."""
+            screen.blit(self.surf, self.top)
+
+        def click(self, p):
+            """Find colision with board rects."""
+            for r, pt in zip(self.rects, self.opts):
+                if r.collidepoint(p):
+                    return pt
+            return None
+
+    def send_move(move):
+        """Send move of chess piece."""
+        uci = move.uci()
+        send_recv(sock, {"action": "move", "table_id": table_id, "uci": uci})
+
