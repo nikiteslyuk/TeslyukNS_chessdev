@@ -10,3 +10,11 @@ from chessclub.client.__main__ import (
     ChessCmd,
 )
 
+
+class TestChessProject(unittest.TestCase):
+    """Набор юнит тестов."""
+
+    def test_player_creation(self):
+        """Player хранит имя, переданное в конструкторе."""
+        p = Player("Vasya")
+        self.assertEqual(p.name, "Vasya")
