@@ -52,3 +52,14 @@ class TestChessProject(unittest.TestCase):
 
             self.assertEqual(get_table_info(fake_sock, 1)["id"], 1)
             self.assertIsNone(get_table_info(fake_sock, 99))
+
+    def test_complete_createtable_space_then_tab(self):
+        """После 'createtable ' (с пробелом) автодополнение предлагает 'as'."""
+        with patch("chessclub.client.__main__.send_recv") as mock_send_recv:
+            mock_send_recv.return_value = {"status": "ok", "msg": "ok"}
+
+            cmd = ChessCmd("petya", sock=MagicMock())
+
+            options = cmd.complete_createtable("", "createtable ", 12, 13)
+
+            self.assertEqual(options, ["as"])
