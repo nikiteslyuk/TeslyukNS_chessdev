@@ -621,6 +621,59 @@ class ChessCmd(cmd.Cmd):
         self.polling_stop = threading.Event()
         self.game_start_request = threading.Event()
 
+    def do_createtable(self, arg):
+        """Создать новый стол для игры.
+        Использование: createtable [as white|black]
+        Если цвет не указан, выбирается случайным образом.
+        Можно создать только один стол одновременно (до leave).
+        """
+        if self.current_table is not None:
+            print("Сначала покиньте текущий стол (leave), чтобы создать новый.")
+            return
+        args = shlex.split(arg)
+        if not args:
+            resp = send_recv(self.sock, {"action": "createtable"})
+            print(resp["msg"])
+            if resp["status"] == "ok":
+                self.current_table = resp["data"]["table_id"]
+                self.current_color = resp["data"]["color"]
+                print(f"Таблица создана. Ваш цвет: {self.current_color}.")
+                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                self.start_table_watcher()
+        elif (
+            len(args) == 2 and args[0].lower() == "as" and args[1] in ("white", "black")
+        ):
+            color = args[1]
+            resp = send_recv(self.sock, {"action": "createtable", "color": color})
+            print(resp["msg"])
+            if resp["status"] == "ok":
+                self.current_table = resp["data"]["table_id"]
+                self.current_color = color
+                print(f"Таблица создана. Ваш цвет: {self.current_color}.")
+                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                self.start_table_watcher()
+        else:
+            print("Используйте: createtable или createtable as white|black")
+
+    def complete_createtable(self, text, line, begidx, endidx):
+        """Complete createtable command."""
+        parts = shlex.split(line)
+        if len(parts) == 1:
+            return ["as"] if "as".startswith(text) else []
+        if len(parts) == 2:
+            return [c for c in ["white", "black"] if c.startswith(text)]
+        return []
+
+    def do_list(self, arg):
+        """Показать список всех столов, их игроков и статус.
+        Использование: list
+        """
+        resp = send_recv(self.sock, {"action": "list_tables"})
+        for t in resp["data"]:
+            print(
+                f"Table {t['id']} | White: {t['white']} | Black: {t['black']} | InGame: {t['in_game']}"
+            )
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         print("Использование: python3 client.py <имя_игрока>")

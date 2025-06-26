@@ -595,6 +595,32 @@ def play_game_pygame(
     pygame.quit()
     return
 
+class ChessCmd(cmd.Cmd):
+    """Class for cmd interaction."""
+
+    prompt = ">> "
+
+    def __init__(self, username, sock=None):
+        """Init class."""
+        super().__init__()
+        if sock:
+            self.sock = sock
+        else:
+            self.sock = socket.create_connection((SERVER, PORT))
+        self.username = username
+        resp = send_recv(self.sock, {"action": "register", "name": self.username})
+        if resp["status"] != "ok":
+            print("Ошибка регистрации:", resp["msg"])
+            sys.exit(1)
+        self.current_table = None
+        self.current_color = None
+        self.playing = False
+        import threading
+
+        self.polling_thread = None
+        self.polling_stop = threading.Event()
+        self.game_start_request = threading.Event()
+
 if __name__ == "__main__":
     if len(sys.argv) < 2 or not sys.argv[1].strip():
         print("Использование: python3 client.py <имя_игрока>")
