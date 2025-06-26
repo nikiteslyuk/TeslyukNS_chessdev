@@ -487,3 +487,38 @@ def play_game_pygame(
                         pending = None
                         pending_fen = new_fen
                         last = move
+                        else:
+                        board.set_fen(new_fen)
+                        pending_fen = None
+                        if board.is_checkmate() or board.is_stalemate():
+                            game_over = True
+                last_poll = time.time()
+
+        screen.fill((255, 255, 255))
+        for r in range(8):
+            for f in range(8):
+                draw_r = r if flip_board else 7 - r
+                pygame.draw.rect(
+                    screen,
+                    COL_L if (f + r) & 1 else COL_D,
+                    pygame.Rect(f * SQ, draw_r * SQ + TOP_MARGIN, SQ, SQ),
+                )
+        if not game_over:
+            if not legal_sqs and not capture_sqs and last:
+                for sq in (last.from_square, last.to_square):
+                    f, r = chess.square_file(sq), chess.square_rank(sq)
+                    draw_r = r if flip_board else 7 - r
+                    screen.blit(S_LAST, (f * SQ, draw_r * SQ + TOP_MARGIN))
+            for s in legal_sqs:
+                f, r = chess.square_file(s), chess.square_rank(s)
+                draw_r = r if flip_board else 7 - r
+                screen.blit(S_MOVE, (f * SQ, draw_r * SQ + TOP_MARGIN))
+            for s in capture_sqs:
+                f, r = chess.square_file(s), chess.square_rank(s)
+                draw_r = r if flip_board else 7 - r
+                screen.blit(S_CAP, (f * SQ, draw_r * SQ + TOP_MARGIN))
+            if board.is_check():
+                k = board.king(board.turn)
+                f, r = chess.square_file(k), chess.square_rank(k)
+                draw_r = r if flip_board else 7 - r
+                screen.blit(S_CHK, (f * SQ, draw_r * SQ + TOP_MARGIN))
