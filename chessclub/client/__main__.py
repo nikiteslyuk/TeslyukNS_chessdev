@@ -392,3 +392,38 @@ def play_game_pygame(
             msg = font_small.render(
                 _("Для продолжения вернитесь в терминал", locale), True, (200, 200, 200)
             )
+            rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
+            screen.blit(msg, rect2)
+            pygame.display.flip()
+            if left_table_time and time.time() - left_table_time > 1:
+                running = False
+            continue
+
+        if anims:
+            if all(a.tick() for a in anims):
+                anims.clear()
+                if pending:
+                    if board.piece_at(
+                        pending.from_square
+                    ).piece_type == chess.PAWN and chess.square_rank(
+                        pending.to_square
+                    ) in (
+                        0,
+                        7,
+                    ):
+                        promo = PromoMenu(board.turn, pending.to_square)
+                    else:
+                        board.push(pending)
+                        last = pending
+                        send_move(pending)
+                        pending = None
+                        if board.is_checkmate() or board.is_stalemate():
+                            game_over = True
+                if pending_fen:
+                    board.set_fen(pending_fen)
+                    pending_fen = None
+                    if board.is_checkmate() or board.is_stalemate():
+                        game_over = True
+        elif promo and pending:
+            pass
+        else:
