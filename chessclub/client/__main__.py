@@ -190,3 +190,58 @@ def play_game_pygame(
         uci = move.uci()
         send_recv(sock, {"action": "move", "table_id": table_id, "uci": uci})
 
+       def draw_labels(table_info):
+        """Draw names of players."""
+        if table_info:
+            white = table_info.get("white", "")
+            black = table_info.get("black", "")
+            active_players = set(table_info.get("active_players", []))
+        else:
+            white = "White"
+            black = "Black"
+            active_players = set()
+
+        if not white or white not in active_players:
+            white_label = _("Ожидание белых", locale)
+        else:
+            white_label = white
+
+        if not black or black not in active_players:
+            black_label = _("Ожидание чёрных", locale)
+        else:
+            black_label = black
+
+        if my_color == "white":
+            my_name = username if username else white_label
+            opp_name = black_label if black_label != my_name else _("Ожидание чёрных", locale)
+        elif my_color == "black":
+            my_name = username if username else black_label
+            opp_name = white_label if white_label != my_name else _("Ожидание белых", locale)
+        else:
+            my_name = white_label
+            opp_name = black_label
+
+        if flip_board:
+            bottom_label = my_name
+            top_label = opp_name
+        else:
+            bottom_label = my_name if my_color != "black" else opp_name
+            top_label = opp_name if my_color != "black" else my_name
+
+        if top_label:
+            top_text = label_font.render(str(top_label), True, (0, 0, 0))
+            top_rect = top_text.get_rect(center=(SQ * 4, TOP_MARGIN // 2))
+            screen.blit(top_text, top_rect)
+        if bottom_label:
+            bottom_text = label_font.render(str(bottom_label), True, (0, 0, 0))
+            bottom_rect = bottom_text.get_rect(
+                center=(SQ * 4, TOP_MARGIN + SQ * 8 + BOTTOM_MARGIN // 2)
+            )
+            screen.blit(bottom_text, bottom_rect)
+
+    resp = send_recv(sock, {"action": "get_board", "table_id": table_id})
+    if resp["status"] != "ok":
+        print(_("Ошибка: нет такой партии!", locale))
+        pygame.quit()
+        return
+
