@@ -576,3 +576,21 @@ def play_game_pygame(
         table_info = get_table_info(sock, table_id)
         draw_labels(table_info)
         pygame.display.flip()
+
+    if has_left_table:
+        screen.fill((0, 0, 0))
+        text = font_big.render(_("Вы покинули стол", locale), True, (255, 255, 255))
+        rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
+        screen.blit(text, rect)
+        msg = font_small.render(
+            _("Для продолжения вернитесь в терминал", locale), True, (200, 200, 200)
+        )
+        rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
+        screen.blit(msg, rect2)
+        pygame.display.flip()
+        if left_table_time and time.time() - left_table_time > 1:
+            running = False
+
+    pygame.display.quit()
+    pygame.quit()
+    return
