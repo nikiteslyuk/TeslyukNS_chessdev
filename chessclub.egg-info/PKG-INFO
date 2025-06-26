@@ -1,9 +1,0 @@
-Metadata-Version: 2.4
-Name: chessclub
-Version: 0.0.0
-Summary: Chess Club
-Author-email: Niki and Artyom <aaa@aaa.a>
-License-Expression: MIT
-Description-Content-Type: text/markdown
-Requires-Dist: pygame
-Requires-Dist: chess
