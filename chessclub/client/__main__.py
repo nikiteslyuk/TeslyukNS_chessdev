@@ -427,3 +427,31 @@ def play_game_pygame(
         elif promo and pending:
             pass
         else:
+            if time.time() - last_poll > POLL_INTERVAL:
+                resp = send_recv(sock, {"action": "get_board", "table_id": table_id})
+                if resp.get("status") != "ok" or resp.get("data") is None:
+                    screen.fill((0, 0, 0))
+                    text = font_big.render("Партия завершена", True, (255, 255, 255))
+                    rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
+                    screen.blit(text, rect)
+                    msg = font_small.render(
+                        _("Стол был автоматически удален.", locale), True, (200, 200, 200)
+                    )
+                    rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
+                    screen.blit(msg, rect2)
+                    pygame.display.flip()
+                    pygame.time.wait(2000)
+                    running = False
+                    break
+                new_fen = resp["data"]
+                if new_fen != board.fen():
+                    new_board = chess.Board(new_fen)
+                    move = None
+                    for mv in board.legal_moves:
+                        test_board = board.copy()
+                        test_board.push(mv)
+                        if test_board.fen() == new_fen:
+                            move = mv
+                            break
+                    if move:
+                        s, t = sq_center(move.from_square), sq_center(move.to_square)
