@@ -24,3 +24,12 @@ def task_po():
         "file_dep": ["CHESS.pot"],
         "targets": [f"CHESS.po"],
     }
+
+
+# def task_po():
+#     """Update translations."""
+#     return {
+#         "actions": [f"pybabel update -D CHESS -d {PODEST} -l ru_RU.UTF-8 -i CHESS.pot"],
+#         "file_dep": ["CHESS.pot"],
+#         "targets": [f"CHESS.po"],
+#     }
