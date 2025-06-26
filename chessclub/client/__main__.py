@@ -22,7 +22,7 @@ PORT = 5555
 
 locales_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "locales")
 LOCALES = {
-    "ru_RU.UTF-8": gettext.translation("CHESS", locales_dir, ["ru"]),
+    "ru_RU.UTF-8": gettext.translation("CHESS", locales_dir, languages=["ru_RU.UTF-8"]),
     "en_US.UTF-8": gettext.NullTranslations(),
 }
 
@@ -59,10 +59,10 @@ def get_table_info(sock, table_id):
 
 
 def play_game_pygame(
-    table_id, sock, my_color=None, flip_board=False, quit_callback=None, username=None
+    table_id, sock, my_color=None, flip_board=False, quit_callback=None, username=None, locale="ru_RU.UTF-8"
 ):
     """Make fonts and images."""
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # Поднимаемся в /chessdev
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
     FIGDIR = os.path.join(BASE_DIR, "figures")
     SQ, FPS = 96, 60
     COL_L, COL_D = (240, 217, 181), (181, 136, 99)
@@ -204,21 +204,21 @@ def play_game_pygame(
             active_players = set()
 
         if not white or white not in active_players:
-            white_label = "Ожидание белых"
+            white_label = _("Ожидание белых", locale)
         else:
             white_label = white
 
         if not black or black not in active_players:
-            black_label = "Ожидание чёрных"
+            black_label = _("Ожидание чёрных", locale)
         else:
             black_label = black
 
         if my_color == "white":
             my_name = username if username else white_label
-            opp_name = black_label if black_label != my_name else "Ожидание чёрных"
+            opp_name = black_label if black_label != my_name else _("Ожидание чёрных", locale)
         elif my_color == "black":
             my_name = username if username else black_label
-            opp_name = white_label if white_label != my_name else "Ожидание белых"
+            opp_name = white_label if white_label != my_name else _("Ожидание белых", locale)
         else:
             my_name = white_label
             opp_name = black_label
@@ -243,7 +243,7 @@ def play_game_pygame(
 
     resp = send_recv(sock, {"action": "get_board", "table_id": table_id})
     if resp["status"] != "ok":
-        print("Ошибка: нет такой партии!")
+        print(_("Ошибка: нет такой партии!", locale))
         pygame.quit()
         return
 
@@ -388,11 +388,11 @@ def play_game_pygame(
 
         if has_left_table:
             screen.fill((0, 0, 0))
-            text = font_big.render("Вы покинули стол", True, (255, 255, 255))
+            text = font_big.render(_("Вы покинули стол", locale), True, (255, 255, 255))
             rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
             screen.blit(text, rect)
             msg = font_small.render(
-                "Для продолжения вернитесь в терминал", True, (200, 200, 200)
+                _("Для продолжения вернитесь в терминал", locale), True, (200, 200, 200)
             )
             rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
             screen.blit(msg, rect2)
@@ -437,7 +437,7 @@ def play_game_pygame(
                     rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
                     screen.blit(text, rect)
                     msg = font_small.render(
-                        "Стол был автоматически удален.", True, (200, 200, 200)
+                        _("Стол был автоматически удален.", locale), True, (200, 200, 200)
                     )
                     rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
                     screen.blit(msg, rect2)
@@ -568,10 +568,10 @@ def play_game_pygame(
             mask.fill(MASK_MATE if board.is_checkmate() else MASK_PATT)
             screen.blit(mask, (0, TOP_MARGIN))
             if board.is_checkmate():
-                winner = "Чёрные" if board.turn else "Белые"
-                txt = f"Мат. {winner} победили"
+                winner = _("Чёрные", locale) if board.turn else _("Белые", locale)
+                txt = _("Мат. {winner} победили", locale).format(winner=winner)
             else:
-                txt = "Пат. Ничья"
+                txt = _("Пат. Ничья", locale)
             img = font.render(txt, True, (255, 255, 255))
             rect = img.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
             screen.blit(img, rect)
@@ -581,11 +581,11 @@ def play_game_pygame(
 
     if has_left_table:
         screen.fill((0, 0, 0))
-        text = font_big.render("Вы покинули стол", True, (255, 255, 255))
+        text = font_big.render(_("Вы покинули стол", locale), True, (255, 255, 255))
         rect = text.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4))
         screen.blit(text, rect)
         msg = font_small.render(
-            "Для продолжения вернитесь в терминал", True, (200, 200, 200)
+            _("Для продолжения вернитесь в терминал", locale), True, (200, 200, 200)
         )
         rect2 = msg.get_rect(center=(SQ * 4, TOP_MARGIN + SQ * 4 + 70))
         screen.blit(msg, rect2)
@@ -614,7 +614,7 @@ class ChessCmd(cmd.Cmd):
         self.username = username
         resp = send_recv(self.sock, {"action": "register", "name": self.username})
         if resp["status"] != "ok":
-            print("Ошибка регистрации:", resp["msg"])
+            print(_("Ошибка регистрации: {msg}", self.locale).format(msg=resp["msg"]))
             sys.exit(1)
         self.current_table = None
         self.current_color = None
@@ -627,7 +627,7 @@ class ChessCmd(cmd.Cmd):
 
     def wait_for_opponent_and_start(self):
         """Wait for second player."""
-        print("Ожидание второго игрока...")
+        print(_("Ожидание второго игрока...", self.locale))
         while True:
             resp = send_recv(self.sock, {"action": "list_tables"})
             for t in resp["data"]:
@@ -641,6 +641,7 @@ class ChessCmd(cmd.Cmd):
                         flip_board=flip,
                         quit_callback=self.on_leave,
                         username=self.username,
+                        locale=self.locale
                     )
                     self.playing = False
                     self.current_table = None
@@ -662,7 +663,7 @@ class ChessCmd(cmd.Cmd):
         Можно создать только один стол одновременно (до leave).
         """
         if self.current_table is not None:
-            print("Сначала покиньте текущий стол (leave), чтобы создать новый.")
+            print(_("Сначала покиньте текущий стол (leave), чтобы создать новый.", self.locale))
             return
         args = shlex.split(arg)
         if not args:
@@ -671,23 +672,21 @@ class ChessCmd(cmd.Cmd):
             if resp["status"] == "ok":
                 self.current_table = resp["data"]["table_id"]
                 self.current_color = resp["data"]["color"]
-                print(f"Таблица создана. Ваш цвет: {self.current_color}.")
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                print(_("Таблица создана. Ваш цвет: {color}.", self.locale).format(color=self.current_color))
+                print(_("Ждём соперника... Когда он появится, вы получите уведомление.", self.locale))
                 self.start_table_watcher()
-        elif (
-            len(args) == 2 and args[0].lower() == "as" and args[1] in ("white", "black")
-        ):
+        elif len(args) == 2 and args[0].lower() == "as" and args[1] in ("white", "black"):
             color = args[1]
             resp = send_recv(self.sock, {"action": "createtable", "color": color})
             print(resp["msg"])
             if resp["status"] == "ok":
                 self.current_table = resp["data"]["table_id"]
                 self.current_color = color
-                print(f"Таблица создана. Ваш цвет: {self.current_color}.")
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                print(_("Таблица создана. Ваш цвет: {color}.", self.locale).format(color=self.current_color))
+                print(_("Ждём соперника... Когда он появится, вы получите уведомление.", self.locale))
                 self.start_table_watcher()
         else:
-            print("Используйте: createtable или createtable as white|black")
+            print(_("Используйте: createtable или createtable as white|black", self.locale))
 
     def complete_createtable(self, text, line, begidx, endidx):
         """Complete createtable command."""
@@ -716,7 +715,7 @@ class ChessCmd(cmd.Cmd):
         """
         if self.current_table is not None:
             print(
-                "Сначала покиньте текущий стол (leave), чтобы присоединиться к другому."
+                _("Сначала покиньте текущий стол (leave), чтобы присоединиться к другому.", self.locale)
             )
             return
         args = shlex.split(arg)
@@ -727,15 +726,18 @@ class ChessCmd(cmd.Cmd):
                 self.current_table = resp["data"]["table_id"]
                 self.current_color = resp["data"]["color"]
                 print(
-                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
+                    _("Вы присоединились к столу {table} как {color}.", self.locale).format(
+                        table=self.current_table,
+                        color=self.current_color,
+                    )
                 )
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                print(_("Ждём соперника... Когда он появится, вы получите уведомление.", self.locale))
                 self.start_table_watcher()
         else:
             try:
                 tid = int(args[0])
             except ValueError:
-                print("Некорректный id")
+                print(_("Некорректный id", self.locale))
                 return
             resp = send_recv(self.sock, {"action": "join", "table_id": tid})
             print(resp["msg"])
@@ -743,9 +745,12 @@ class ChessCmd(cmd.Cmd):
                 self.current_table = tid
                 self.current_color = resp["data"]["color"]
                 print(
-                    f"Вы присоединились к столу {self.current_table} как {self.current_color}."
+                    _("Вы присоединились к столу {table} как {color}.", self.locale).format(
+                        table=self.current_table,
+                        color=self.current_color,
+                    )
                 )
-                print("Ждём соперника... Когда он появится, вы получите уведомление.")
+                print(_("Ждём соперника... Когда он появится, вы получите уведомление.", self.locale))
                 self.start_table_watcher()
 
     def on_leave(self):
@@ -765,7 +770,7 @@ class ChessCmd(cmd.Cmd):
             self.playing = False
             if hasattr(self, "polling_stop"):
                 self.polling_stop.set()
-            print("Вы покинули стол.")
+            print(_("Вы покинули стол.", self.locale))
 
     def start_table_watcher(self):
         """Start watching game of somebody."""
@@ -799,9 +804,7 @@ class ChessCmd(cmd.Cmd):
                 if t["id"] == self.current_table and t["white"] and t["black"]:
                     other = t["white"] if self.current_color == "black" else t["black"]
                     if other and other != self.username:
-                        print(
-                            f"\nИгрок {other} готов с вами сыграть! Введите команду play для старта партии."
-                        )
+                        print(_("Игрок {name} готов с вами сыграть! Введите команду play для старта партии.", self.locale).format(name=other))
                         print(self.prompt, end="", flush=True)
                         notified = True
                         return
@@ -813,7 +816,7 @@ class ChessCmd(cmd.Cmd):
         Окно игры откроется и терминал будет заблокирован до окончания партии или выхода.
         """
         if self.current_table is None or self.current_color is None:
-            print("Нет активного стола. Сначала создайте или присоединитесь.")
+            print(_("Нет активного стола. Сначала создайте или присоединитесь.", self.locale))
             return
         resp = send_recv(self.sock, {"action": "list_tables"})
         for t in resp["data"]:
@@ -835,12 +838,13 @@ class ChessCmd(cmd.Cmd):
                     flip_board=flip,
                     quit_callback=self.on_leave,
                     username=self.username,
+                    locale=self.locale
                 )
                 self.playing = False
                 self.current_table = None
                 self.current_color = None
                 return
-        print("Соперник еще не подключился! Ждите оповещения.")
+        print(_("Соперник еще не подключился! Ждите оповещения.", self.locale))
 
     def do_leave(self, arg):
         """Покинуть текущий стол (выйти из партии/лобби).
@@ -868,7 +872,7 @@ class ChessCmd(cmd.Cmd):
             print(_("Нет такого стола", self.locale))
             return
         play_game_pygame(
-            table_id, self.sock, my_color=None, flip_board=False, username=self.username
+            table_id, self.sock, my_color=None, flip_board=False, username=self.username, locale=self.locale
         )
 
     def do_quit(self, arg):
@@ -876,7 +880,7 @@ class ChessCmd(cmd.Cmd):
         Использование: quit
         Перед выходом автоматически покидает текущий стол.
         """
-        print("Выход...")
+        print(_("Выход...", self.locale))
         self.on_leave()
         return True
 

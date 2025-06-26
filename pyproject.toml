@@ -1,35 +1,36 @@
 [project]
-name="chessclub"
-description="Chess Club"
-dynamic=["version"]
-readme="README.md"
+name = "chessclub"
+description = "Chess Club"
+readme = "README.md"
+dynamic = ["version"]
+authors = [{ name = "Niki and Artyom", email = "aaa@aaa.a" }]
+license = "MIT" 
+
 dependencies = [
-	"pygame",
-	"chess",
-]
-license = "MIT"
-authors = [
- {name = "Niki and Artyom", email = "aaa@aaa.a"}
+    "pygame",
+    "chess",
 ]
 
 [project.scripts]
-chclient = 'chessclub.client:run'
-chserver = 'chessclub.server:run'
+chclient = "chessclub.client:run"
+chserver = "chessclub.server:run"
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools.package-dir]
-chessclub="chessclub"
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["chessclub*"]
+namespaces = true
 
 [tool.setuptools.package-data]
-chessclub=["locales/*/*/*.mo",
-"locales/*/*/*.po",
-"client/*.py",
-"server/*.py",
-"tests/*",
-"figures/*",
-"docs/html/*.html",
-"docs/html/**/*",
+chessclub = [
+    "locales/*/*/*.mo",
+    "locales/*/*/*.po",
+    "figures/*",
+    "docs/html/**/*.html",
+    "tests/*"
 ]
