@@ -4,21 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pygame= "*"
-chess="*"
 python-chess = "*"
+pygame = "*"
+doit = "*"
+babel = "*"
+tomli = "*"
 
 [dev-packages]
-sphinx = "*"
-flake8 = "*"
-pydocstyle = "*"
-docutils = "*"
-coverage = "*"
-setuptools = "*"
-build = "*"
-packaging = "*"
-doit = "*"
-black = "*"
 
 [requires]
-python_version = "3.12"
+python_version = "3.8"

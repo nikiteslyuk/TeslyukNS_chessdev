@@ -68,13 +68,14 @@ def task_i18n():
 def task_pep8():
     """Check flake8 and pydocutils."""
     return {
-            'actions': ['flake8 chessclub', 'pydocstyle chessclub']
+            'actions': ['flake8 .', 'pydocstyle .']
     }
 
+# пока неживое
 def task_test():
     """Perform tests."""
     return {
-            'actions': ['python3 -m chessclub.tests.unittests -v'],
+            'actions': ['python3 -m chessclub.tests.ServerTest -v', 'python3 -m mood.tests.ClientTest -v'],
             'task_dep': ['i18n']
     }
 

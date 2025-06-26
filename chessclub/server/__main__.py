@@ -55,10 +55,10 @@ class ChessServer:
                     async with self.lock:
                         if name in self.users:
                             resp["status"] = "err"
-                            resp["msg"] = "Name taken"
+                            resp["msg"] = "SERVER:: Name taken"
                         else:
                             self.users[name] = Player(name)
-                            resp["msg"] = f"Welcome, {name}"
+                            resp["msg"] = f"SERVER:: Welcome, {name}"
                             user = name
 
                 elif cmd["action"] == "ready_play":
@@ -67,11 +67,11 @@ class ChessServer:
                     async with self.lock:
                         if tid not in self.tables:
                             resp["status"] = "err"
-                            resp["msg"] = "No such table"
+                            resp["msg"] = "SERVER:: No such table"
                         else:
                             t = self.tables[tid]
                             t.active_players.add(user)
-                            resp["msg"] = f"{user} is ready"
+                            resp["msg"] = f"SERVER:: {user} is ready"
 
                 elif cmd["action"] == "createtable":
                     color = cmd.get("color", None)
@@ -92,7 +92,7 @@ class ChessServer:
                         self.tables[tid] = table
                         resp["data"] = {"table_id": tid, "color": color}
                         resp["msg"] = (
-                            f"Table {tid} created, you play as {color}, waiting for second player"
+                            f"SERVER:: Table {tid} created, you play as {color}, waiting for second player"
                         )
 
                 elif cmd["action"] == "list_tables":
@@ -131,16 +131,16 @@ class ChessServer:
                                         color = "black"
                                     resp["data"] = {"table_id": t.id, "color": color}
                                     resp["msg"] = (
-                                        f"Fastjoined to table {t.id} as {color}"
+                                        f"SERVER:: Fastjoined to table {t.id} as {color}"
                                     )
                                     break
                             if not found:
                                 resp["status"] = "err"
-                                resp["msg"] = "No available tables. Create one!"
+                                resp["msg"] = "SERVER:: No available tables. Create one!"
                         else:
                             if tid not in self.tables:
                                 resp["status"] = "err"
-                                resp["msg"] = "No such table"
+                                resp["msg"] = "SERVER:: No such table"
                             else:
                                 t = self.tables[tid]
                                 color = None
@@ -152,10 +152,10 @@ class ChessServer:
                                     color = "black"
                                 else:
                                     resp["status"] = "err"
-                                    resp["msg"] = "Both seats are taken"
+                                    resp["msg"] = "SERVER:: Both seats are taken"
                                     color = None
                                 if color:
-                                    resp["msg"] = f"You joined table {tid} as {color}"
+                                    resp["msg"] = f"SERVER:: You joined table {tid} as {color}"
                                     resp["data"] = {"color": color}
 
                 elif cmd["action"] == "move":
@@ -163,23 +163,23 @@ class ChessServer:
                     async with self.lock:
                         if tid not in self.tables:
                             resp["status"] = "err"
-                            resp["msg"] = "No such table"
+                            resp["msg"] = "SERVER:: No such table"
                         else:
                             t = self.tables[tid]
                             mv = chess.Move.from_uci(uci)
                             if mv in t.board.legal_moves:
                                 t.board.push(mv)
-                                resp["msg"] = "Move accepted"
+                                resp["msg"] = "SERVER:: Move accepted"
                             else:
                                 resp["status"] = "err"
-                                resp["msg"] = "Illegal move"
+                                resp["msg"] = "SERVER:: Illegal move"
 
                 elif cmd["action"] == "get_board":
                     tid = cmd["table_id"]
                     async with self.lock:
                         if tid not in self.tables:
                             resp["status"] = "err"
-                            resp["msg"] = "No such table"
+                            resp["msg"] = "SERVER:: No such table"
                         else:
                             t = self.tables[tid]
                             resp["data"] = t.board.fen()
@@ -189,7 +189,7 @@ class ChessServer:
                     async with self.lock:
                         if tid not in self.tables:
                             resp["status"] = "err"
-                            resp["msg"] = "No such table"
+                            resp["msg"] = "SERVER:: No such table"
                         else:
                             t = self.tables[tid]
                             resp["data"] = t.board.fen()
@@ -207,7 +207,7 @@ class ChessServer:
                             resp["msg"] = f"{user} left table {tid} ({color})"
                         else:
                             resp["status"] = "err"
-                            resp["msg"] = "No such table"
+                            resp["msg"] = "SERVER:: No such table"
 
                 out_data = pickle.dumps(resp)
                 writer.write(len(out_data).to_bytes(4, "big"))
@@ -232,7 +232,7 @@ async def main():
         await server.handle(reader, writer)
 
     srv = await asyncio.start_server(handle_conn, HOST, PORT)
-    print(f"Async server listening on {HOST}:{PORT}")
+    print(f"SERVER:: Async server listening on {HOST}:{PORT}")
     async with srv:
         await srv.serve_forever()
 

@@ -7,12 +7,14 @@ import chess
 HOST = "0.0.0.0"
 PORT = 5555
 
+
 class Player:
     """Class with player name."""
 
     def __init__(self, name):
         """Init class."""
         self.name = name
+
 
 class Table:
     """Class with chess table info."""
@@ -26,10 +28,11 @@ class Table:
         self.spectators = []
         self.active_players = set()
 
+
 class ChessServer:
     """Class for handling interaction between players and table management."""
 
-    def __init__(self):
+def __init__(self):
         """Init class."""
         self.users = {}
         self.tables = {}
@@ -57,7 +60,8 @@ class ChessServer:
                             self.users[name] = Player(name)
                             resp["msg"] = f"Welcome, {name}"
                             user = name
-              elif cmd["action"] == "ready_play":
+
+                elif cmd["action"] == "ready_play":
                     tid = cmd["table_id"]
                     user = cmd["user"]
                     async with self.lock:
@@ -69,7 +73,7 @@ class ChessServer:
                             t.active_players.add(user)
                             resp["msg"] = f"{user} is ready"
 
-               elif cmd["action"] == "createtable":
+                elif cmd["action"] == "createtable":
                     color = cmd.get("color", None)
                     async with self.lock:
                         existing_ids = set(self.tables.keys())
@@ -90,6 +94,7 @@ class ChessServer:
                         resp["msg"] = (
                             f"Table {tid} created, you play as {color}, waiting for second player"
                         )
+
                 elif cmd["action"] == "list_tables":
                     async with self.lock:
                         tables = [
@@ -109,6 +114,7 @@ class ChessServer:
                             for t in self.tables.values()
                         ]
                         resp["data"] = tables
+
                 elif cmd["action"] == "join":
                     tid = cmd.get("table_id", None)
                     async with self.lock:
@@ -151,6 +157,7 @@ class ChessServer:
                                 if color:
                                     resp["msg"] = f"You joined table {tid} as {color}"
                                     resp["data"] = {"color": color}
+
                 elif cmd["action"] == "move":
                     tid, uci = cmd["table_id"], cmd["uci"]
                     async with self.lock:
@@ -176,6 +183,16 @@ class ChessServer:
                         else:
                             t = self.tables[tid]
                             resp["data"] = t.board.fen()
+
+                elif cmd["action"] == "view":
+                    tid = cmd["table_id"]
+                    async with self.lock:
+                        if tid not in self.tables:
+                            resp["status"] = "err"
+                            resp["msg"] = "No such table"
+                        else:
+                            t = self.tables[tid]
+                            resp["data"] = t.board.fen()
                 elif cmd["action"] == "leave":
                     tid, color, user = cmd["table_id"], cmd["color"], cmd["user"]
                     async with self.lock:
@@ -191,6 +208,7 @@ class ChessServer:
                         else:
                             resp["status"] = "err"
                             resp["msg"] = "No such table"
+
                 out_data = pickle.dumps(resp)
                 writer.write(len(out_data).to_bytes(4, "big"))
                 writer.write(out_data)
@@ -218,6 +236,11 @@ async def main():
     async with srv:
         await srv.serve_forever()
 
-if __name__ == "__main__":
+
+def run():
     """Run application."""
     asyncio.run(main())
+
+
+if __name__ == "__main__":
+    run()
