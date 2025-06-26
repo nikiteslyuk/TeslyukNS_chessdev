@@ -63,3 +63,30 @@ class TestChessProject(unittest.TestCase):
             options = cmd.complete_createtable("", "createtable ", 12, 13)
 
             self.assertEqual(options, ["as"])
+
+    def test_on_leave_resets_state_and_sends_leave(self):
+        """on_leave очищает current_table/current_color и шлёт action 'leave'."""
+        with patch("chessclub.client.__main__.send_recv") as mock_send_recv:
+            mock_send_recv.return_value = {"status": "ok", "msg": "ok"}
+            sock_mock = MagicMock()
+
+            cmd = ChessCmd("masha", sock=sock_mock)
+            cmd.current_table, cmd.current_color = 7, "white"
+
+            cmd.on_leave()
+            self.assertIsNone(cmd.current_table)
+            self.assertIsNone(cmd.current_color)
+
+            mock_send_recv.assert_called_with(
+                sock_mock,
+                {
+                    "action": "leave",
+                    "table_id": 7,
+                    "color": "white",
+                    "user": "masha",
+                },
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
