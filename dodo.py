@@ -34,22 +34,22 @@ def task_pot():
 
 
 # разкомментировать в случае экстренной инициализации перевода
-def task_po():
-    """Init translations."""
-    return {
-        "actions": [f"pybabel init -D CHESS -d {PODEST} -l ru_RU.UTF-8 -i CHESS.pot"],
-        "file_dep": ["CHESS.pot"],
-        "targets": [f"CHESS.po"],
-    }
-
-
 # def task_po():
-#     """Update translations."""
+#     """Init translations."""
 #     return {
-#         "actions": [f"pybabel update -D CHESS -d {PODEST} -l ru_RU.UTF-8 -i CHESS.pot"],
+#         "actions": [f"pybabel init -D CHESS -d {PODEST} -l ru_RU.UTF-8 -i CHESS.pot"],
 #         "file_dep": ["CHESS.pot"],
 #         "targets": [f"CHESS.po"],
 #     }
+
+
+def task_po():
+    """Update translations."""
+    return {
+        "actions": [f"pybabel update -D CHESS -d {PODEST} -l ru_RU.UTF-8 -i CHESS.pot"],
+        "file_dep": ["CHESS.pot"],
+        "targets": [f"CHESS.po"],
+    }
 
 
 def task_mo():
@@ -80,9 +80,7 @@ def task_pep8():
 # пока неживое
 def task_test():
     """Perform tests."""
-    return {
-            'actions': ['python3 -m chessclub.tests.unittests -v']
-    }
+    return {"actions": ["python3 -m chessclub.tests.unittests -v"]}
 
 
 def task_clean_targets():
@@ -93,4 +91,3 @@ def task_clean_targets():
 def task_erase():
     """Erase generates and new files."""
     return {"actions": ["git reset --hard", "git clean -xdf"]}
-    
